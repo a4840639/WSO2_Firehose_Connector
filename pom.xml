@@ -24,7 +24,7 @@
     <artifactId>org.wso2.carbon.esb.connector.firehose</artifactId>
     <version>1.0.0</version>
     <packaging>bundle</packaging>
-    <name>WSO2 Carbon - Connector For hw</name>
+    <name>WSO2 Carbon - Connector For Firehose</name>
     <url>http://wso2.org</url>
     
     <dependencyManagement>
