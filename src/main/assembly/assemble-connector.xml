@@ -21,6 +21,18 @@
         <format>zip</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
+    
+    <dependencySets>
+        <dependencySet>
+            <includes>
+                <include>com.amazonaws:aws-java-sdk-*</include>
+            </includes>
+            <outputDirectory>/lib</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <unpack>false</unpack>
+        </dependencySet>
+    </dependencySets>
+    
     <fileSets>
         <fileSet>
             <directory>target/connector/dependencies</directory>
