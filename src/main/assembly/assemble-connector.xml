@@ -25,7 +25,8 @@
     <dependencySets>
         <dependencySet>
             <includes>
-                <include>com.amazonaws:aws-java-sdk-*</include>
+                <include>com.amazonaws:*</include>
+                <include>org.apache.httpcomponents:*</include>
             </includes>
             <outputDirectory>/lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>

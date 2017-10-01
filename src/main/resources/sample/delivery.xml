@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="delivery" xmlns="http://ws.apache.org/ns/synapse">
+    <parameter name="awsKey"/>
+    <parameter name="awsSecret"/>
+    <parameter name="deliveryStreamName"/>
+    <parameter name="firehoseRegion"/>
+    <parameter name="s3BucketName"/>
+    <parameter name="s3RegionName"/>
+    <parameter name="s3ObjectPrefix"/>
+    <parameter name="iamRegion"/>
+    <parameter name="iamRoleName"/>
+    <parameter name="accountId"/>
+    <sequence>
+        <log level="full">
+            <property expression="$func:generated_param" name="*******template_param********"/>
+        </log>
+        <class name="org.wso2.carbon.esb.connector.FirehoseConnector"/>
+    </sequence>
+</template>

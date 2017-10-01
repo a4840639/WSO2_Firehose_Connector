@@ -17,6 +17,8 @@
 */
 package org.wso2.carbon.esb.connector;
 
+import java.nio.ByteBuffer;
+
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
@@ -24,6 +26,7 @@ import org.wso2.carbon.connector.core.ConnectException;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
@@ -73,17 +76,21 @@ public class FirehoseConnector extends AbstractConnector {
     // IAM Role
     protected static String iamRegion;
     protected static AmazonIdentityManagement iamClient;
+    
+    protected static String data;
+    protected static String awsKey;
+    protected static String awsSecret;
 
     @Override
     public void connect(MessageContext messageContext) throws ConnectException {
-        String awsKey = (String) getParameter(messageContext, "awsKey");
-        String awsSecret = (String) getParameter(messageContext, "awsSecret");
-        String s3BucketName = (String) getParameter(messageContext, "s3BucketName");
-        String s3RegionName = (String) getParameter(messageContext, "s3RegionName");
-        String accountId = (String) getParameter(messageContext, "accountId");
-        String deliveryStreamName = (String) getParameter(messageContext, "deliveryStreamName");
-        String firehoseRegion = (String) getParameter(messageContext, "firehoseRegion");
-        String iamRoleName = (String) getParameter(messageContext, "iamRoleName");
+        awsKey = (String) getParameter(messageContext, "awsKey");
+        awsSecret = (String) getParameter(messageContext, "awsSecret");
+        s3BucketName = (String) getParameter(messageContext, "s3BucketName");
+        s3RegionName = (String) getParameter(messageContext, "s3RegionName");
+        accountId = (String) getParameter(messageContext, "accountId");
+        deliveryStreamName = (String) getParameter(messageContext, "deliveryStreamName");
+        firehoseRegion = (String) getParameter(messageContext, "firehoseRegion");
+        iamRoleName = (String) getParameter(messageContext, "iamRoleName");
         
         try {
             log.info("firehose connector received awsKey :" + awsKey);
@@ -94,10 +101,13 @@ public class FirehoseConnector extends AbstractConnector {
             log.info("firehose connector received deliveryStreamName :" + deliveryStreamName);
             log.info("firehose connector received firehoseRegion :" + firehoseRegion);
             log.info("firehose connector received iamRoleName :" + iamRoleName);
-            //log.info(messageContext.getEnvelope().getBody());
+            data = messageContext.getEnvelope().getBody().getText();
             /**Add your connector code here 
             **/
-            
+            initClients();
+            log.info("Putting record in deliveryStream : " + deliveryStreamName + " via Put Record method.");
+            putRecordIntoDeliveryStream();
+            log.info("Done putting record.");
         } catch (Exception e) {
 	    throw new ConnectException(e);	
         }
@@ -114,14 +124,7 @@ public class FirehoseConnector extends AbstractConnector {
          * profile by reading from the credentials file located at
          * (~/.aws/credentials).
          */
-        AWSCredentials credentials = null;
-        try {
-            credentials = new ProfileCredentialsProvider().getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException("Cannot load the credentials from the credential profiles file. "
-                    + "Please make sure that your credentials file is at the correct "
-                    + "location (~/.aws/credentials), and is in valid format.", e);
-        }
+    	BasicAWSCredentials credentials = new BasicAWSCredentials(awsKey, awsSecret);
 
         // S3 client
         s3Client = new AmazonS3Client(credentials);
@@ -135,5 +138,32 @@ public class FirehoseConnector extends AbstractConnector {
         // IAM client
         iamClient = new AmazonIdentityManagementClient(credentials);
         iamClient.setRegion(RegionUtils.getRegion(iamRegion));
+    }
+    
+    /**
+     * Method to put records in the specified delivery stream by reading
+     * contents from sample input file using PutRecord API.
+     *
+     * @throws IOException
+     */
+    protected static void putRecordIntoDeliveryStream() throws Exception {
+        PutRecordRequest putRecordRequest = new PutRecordRequest();
+        putRecordRequest.setDeliveryStreamName(deliveryStreamName);
+
+        Record record = createRecord(data);
+        putRecordRequest.setRecord(record);
+
+        // Put record into the DeliveryStream
+        firehoseClient.putRecord(putRecordRequest);
+    }
+    
+    /**
+     * Method to create the record object for given data.
+     *
+     * @param data the content data
+     * @return the Record object
+     */
+    private static Record createRecord(String data) {
+        return new Record().withData(ByteBuffer.wrap(data.getBytes()));
     }
 }
