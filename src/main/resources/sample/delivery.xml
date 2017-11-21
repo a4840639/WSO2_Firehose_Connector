@@ -11,9 +11,6 @@
     <parameter name="iamRoleName"/>
     <parameter name="accountId"/>
     <sequence>
-        <log level="full">
-            <property expression="$func:generated_param" name="*******template_param********"/>
-        </log>
         <class name="org.wso2.carbon.esb.connector.FirehoseConnector"/>
     </sequence>
 </template>

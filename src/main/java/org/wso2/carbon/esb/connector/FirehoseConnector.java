@@ -18,39 +18,30 @@
 package org.wso2.carbon.esb.connector;
 
 import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+
+import org.apache.http.conn.ssl.AbstractVerifier;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import com.amazonaws.services.identitymanagement.model.CreateRoleRequest;
-import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
-import com.amazonaws.services.identitymanagement.model.GetRoleRequest;
-import com.amazonaws.services.identitymanagement.model.MalformedPolicyDocumentException;
-import com.amazonaws.services.identitymanagement.model.PutRolePolicyRequest;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClient;
-import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
-import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamRequest;
-import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamResult;
-import com.amazonaws.services.kinesisfirehose.model.ListDeliveryStreamsRequest;
-import com.amazonaws.services.kinesisfirehose.model.ListDeliveryStreamsResult;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
+
 import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.util.IOUtils;
-import com.amazonaws.util.StringUtils;
-
 /**
  * Sample method implementation.
  */
@@ -92,6 +83,22 @@ public class FirehoseConnector extends AbstractConnector {
         firehoseRegion = (String) getParameter(messageContext, "firehoseRegion");
         iamRoleName = (String) getParameter(messageContext, "iamRoleName");
         
+        NoopHostnameVerifier dhv = new NoopHostnameVerifier();
+        
+        log.info(dhv.getClass().getProtectionDomain().getCodeSource().getLocation());
+        
+//        SSLContext sslContext;
+//		try {
+//			sslContext = SSLContext.getInstance("TLS");
+//			SSLConnectionSocketFactory ssf = new SSLConnectionSocketFactory(sslContext);
+//			log.info(ssf.getClass().getProtectionDomain().getCodeSource().getLocation());
+//		} catch (NoSuchAlgorithmException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		
+        
+        
         try {
             log.info("firehose connector received awsKey :" + awsKey);
             log.info("firehose connector received awsSecret :" + awsSecret);
@@ -127,17 +134,17 @@ public class FirehoseConnector extends AbstractConnector {
     	BasicAWSCredentials credentials = new BasicAWSCredentials(awsKey, awsSecret);
 
         // S3 client
-        s3Client = new AmazonS3Client(credentials);
-        Region s3Region = RegionUtils.getRegion(s3RegionName);
-        s3Client.setRegion(s3Region);
+//        s3Client = new AmazonS3Client(credentials);
+//        Region s3Region = RegionUtils.getRegion(s3RegionName);
+//        s3Client.setRegion(s3Region);
 
         // Firehose client
         firehoseClient = new AmazonKinesisFirehoseClient(credentials);
         firehoseClient.setRegion(RegionUtils.getRegion(firehoseRegion));
 
         // IAM client
-        iamClient = new AmazonIdentityManagementClient(credentials);
-        iamClient.setRegion(RegionUtils.getRegion(iamRegion));
+//        iamClient = new AmazonIdentityManagementClient(credentials);
+//        iamClient.setRegion(RegionUtils.getRegion(iamRegion));
     }
     
     /**
